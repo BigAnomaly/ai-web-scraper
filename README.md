@@ -1,264 +1,254 @@
-[AI Web Scraper](https://apify.com/crawlworks/ai-web-scraper?fpr=data)
+[AI Web Scraper](https://apify.com/raizen/ai-web-scraper?fpr=data)
 
-## 🤖 What is AI Web Scraper?
+# AI Web Scraper
 
-**AI Web Scraper** is the simplest way to extract structured data from any webpage — give it a URL and a plain-English prompt, and it returns clean, structured JSON powered by AI. No CSS selectors, no XPath, no code.
+Do you need reliable data for your AI agents, LLM pipelines, or training workflows? The **AI Web Scraper** Actor is your key to fast, flexible, and AI‑friendly web extraction on Apify. Under the hood, it relies on the open‑source [Crawl4AI](https://github.com/unclecode/crawl4ai) engine to handle anything from simple single‑page scrapes to deep multi‑link traversals (BFS/DFS/BestFirst). Whether you want clean markdown, JSON extraction, or LLM summarization, just specify your desired strategy via the Actor’s input UI, and you’re set. This Actor integrates well with Make.com, n8n, and Zapier for AI automation
 
-- **Extract anything from any webpage:** product prices, job listings, article content, contact details, reviews, tables — if it's on the page, a prompt can get it out
-- **Zero configuration:** just a URL and a plain-English description of what you want — the AI figures out the rest
-- **Structured output you control:** optionally provide a JSON schema to get output in exactly the shape your application expects
-- **Handle JS-heavy and dynamic sites:** built-in support for JavaScript-rendered pages, lazy-loaded content, and bot-detection avoidance with stealth mode
-- **Automate research and monitoring workflows:** replace manual copy-paste tasks with repeatable, schedulable scraping pipelines
-- **Integrate with any tool:** connect your scraped data directly to Google Sheets, Zapier, Make, Slack, n8n, or any webhook endpoint
-
-**AI Web Scraper turns any webpage into a structured JSON API — with nothing more than a URL and a sentence describing what you need.**
-
-### What can AI Web Scraper extract?
-
-| 🛒 Product prices and availability | 💼 Job listings and descriptions |
-| --- | --- |
-| 📰 Article headlines and content | 🏢 Company details and contacts |
-| ⭐ Reviews and ratings | 📊 Tables and comparison data |
-| 🏷️ Categories and tags | 📅 Dates, deadlines, and events |
-| 🔗 Links and URLs | 📋 Any custom data you describe |
-
-For maximum usefulness, AI Web Scraper has the following abilities:
-
-- **Prompt-based extraction:** describe what you want in plain English — no technical knowledge required
-- **Schema-controlled output:** provide an optional JSON schema to enforce a specific output structure for downstream processing
-- **JavaScript rendering:** fully renders pages before extraction, handling dynamic content, single-page applications, and lazy-loaded elements
-- **Stealth mode:** applies anti-fingerprinting patches to bypass bot detection on protected websites
-- **Wait for selector:** specify a CSS selector to wait for before extraction, ensuring content is fully loaded on complex pages
-- **Flexible proxy support:** use Apify Proxy or bring your own custom proxy URLs for reliable, uninterrupted scraping
-- **Integrate with other tools:** use webhooks or Apify's MCP server to connect with n8n, Make, Zapier, and more
+Below is an overview of each setting you’ll see in the Apify interface and how it affects your crawls.
 
 ---
 
-## ⬇️ Input
+## Quick How-To
 
-The input for AI Web Scraper requires just **two things: a URL and a prompt.** Everything else is optional.
+1. **Start with URLs**
 
-### 🌐 URL
+At a minimum, provide `startUrls` in the UI (or JSON input)—the pages you want to scrape.
+2. **Pick a Crawler & Extraction Style**
 
-The full URL of the webpage you want to scrape.
+Choose between various crawl strategies (e.g., BFS or DFS) and extraction methods (simple markdown, LLM-based, JSON CSS, etc.). You can also enable content filtering or deeper link exploration.
+3. **Review the Output**
 
-**URL examples:**
+Once the Actor finishes, your results will appear in the Apify Dataset—structured JSON, markdown, or whichever format you chose.
 
-- `https://www.netflix.com/tudum/articles/netflix-plans-and-pricing`
-- `https://www.linkedin.com/jobs/view/4401132879/`
-- `https://www.amazon.com/dp/B09G9FPHY6`
-- `https://news.ycombinator.com`
-- `https://yourcompetitor.com/pricing`
+---
 
-Any publicly accessible webpage works. For pages behind login walls or requiring authentication, combine with your own proxy or session cookies via the proxy configuration.
+## Input Fields Explained
 
-### 💬 Extraction Prompt
+These fields appear in the Actor’s input UI. Customize them to match your use case.
 
-Describe in plain English exactly what data you want to extract from the page. Be as specific or as broad as you need — the AI web scraper adapts to your instruction.
+### 1. **startUrls** (Required)
 
-**Prompt examples:**
+List of pages to scrape. For each entry, just provide `"url"`.
 
-- `Extract all pricing plans including price, features, and billing cycle`
-- `Get the job title, company name, location, salary, and required skills`
-- `Extract the product name, current price, original price, star rating, and number of reviews`
-- `Pull all the speaker names, talk titles, and session times from this conference schedule`
-- `Get every FAQ question and its answer from this page`
-
-More specific prompts yield more precise output. If you want a guaranteed output structure, use the optional Output Schema field alongside your prompt.
-
-### 📐 Output Schema (optional)
-
-Provide a JSON schema to define the exact shape of the extracted data. When provided, the AI scraper enforces this structure in its output — making it ideal for pipelines, databases, and integrations that expect a fixed format.
-
-If omitted, the scraper returns free-form JSON based on what the AI determines is most relevant to your prompt.
-
-**Example output schema for job extraction:**
+**Example**:
 
 ```
 {
-  "type": "object",
-  "properties": {
-    "job_title": { "type": "string" },
-    "company": { "type": "string" },
-    "location": { "type": "string" },
-    "salary": { "type": "string" },
-    "employment_type": { "type": "string" }
-  }
+  "startUrls": [
+    { "url": "https://example.com" }
+  ]
 }
 ```
 
-### 🛡️ Proxy Configuration
+### 2. **browserConfig** (Optional)
 
-Configure proxy settings to ensure reliable access to websites that restrict scraping. You can use Apify Proxy (residential or datacenter) or provide your own custom proxy URLs. Proxy is optional for most public websites.
+Configure Playwright’s browser behavior—headless mode, custom user agent, viewport size, etc.
 
-### 🥷 Stealth Mode
+- `browser_type`: “chromium”, “firefox”, or “webkit”
+- `headless`: Boolean to run in headless mode
+- `verbose_logging`: Extra debug logs
+- `ignore_https_errors`: Accept invalid certs
+- `user_agent`: E.g. “random” or a custom string
+- `proxy`: Proxy server URL
+- `viewport_width` / `viewport_height`: Window size
+- `accept_downloads`: Whether downloads are allowed
+- `extra_headers`: Additional request headers
 
-Enable stealth mode to apply anti-bot fingerprinting patches when scraping websites with aggressive bot detection. Recommended for social media platforms, e-commerce sites, and any page that normally blocks automated access.
+### 3. **crawlerConfig** (Optional)
 
-**Default:** `false`
+Core crawling settings—time limits, caching, JavaScript hooks, or multi‑page concurrency.
 
-### ⏳ Wait For Selector (optional)
+- `cache_mode`: “BYPASS” (no cache), “ENABLED”, etc.
+- `page_timeout`: Milliseconds to wait for page loads
+- `simulate_user`: Stealth by mimicking user actions
+- `remove_overlay_elements`: Attempt to remove popups
+- `delay_before_return_html`: Extra wait before final extraction
+- `wait_for`: Wait time or wait condition
+- `screenshot` / `pdf`: Capture screenshot or PDF
+- `enable_rate_limiting`: Rate limit large URL lists
+- `memory_threshold_percent`: Pause if memory is too high
+- `word_count_threshold`: Discard short text blocks
+- `css_selector`, `excluded_tags`, `excluded_selector`: Further refine or skip sections of the DOM
+- `only_text`: Keep plain text only
+- `prettify`: Attempt to clean up HTML
+- `keep_data_attributes`: Keep or drop data-* attributes
+- `remove_forms`: Strip `<form>` elements
+- `bypass_cache` / `disable_cache` / `no_cache_read` / `no_cache_write`: Fine‑grained caching controls
+- `wait_until`: E.g. “domcontentloaded” or “networkidle”
+- `wait_for_images`: Wait for images to fully load
+- `check_robots_txt`: Respect robots.txt?
+- `mean_delay`, `max_range`: Introduce a random delay range
+- `js_code`: Custom JS to run on each page
+- `js_only`: Reuse the same page context without re-navigation
+- `ignore_body_visibility`: Include hidden elements
+- `scan_full_page`: Scroll from top to bottom for lazy loading
+- `scroll_delay`: Delay between scroll steps
+- `process_iframes`: Also parse iframes
+- `override_navigator`: Additional stealth tweak
+- `magic`: Enable multiple advanced anti-bot tricks
+- `adjust_viewport_to_content`: Resize viewport to fit content
+- `screenshot_wait_for`: Wait time before taking a screenshot
+- `screenshot_height_threshold`: Max doc height to screenshot
+- `image_description_min_word_threshold`: Filter out images with minimal alt text
+- `image_score_threshold`: Remove lower‑score images
+- `exclude_external_images`: No external images
+- `exclude_social_media_domains`, `exclude_domains`: Avoid these domains entirely
+- `exclude_external_links`, `exclude_social_media_links`: Strip external or social media links
+- `verbose`: Extra logs
+- `log_console`: Show browser console logs?
+- `stream`: Stream results as they come in, or wait until done
 
-A CSS selector that the scraper waits for before capturing the page. Use this on JavaScript-heavy pages where content loads asynchronously after the initial page load.
+### 4. **deepCrawlConfig** (Optional)
 
-**Example:** `.product-price` or `#job-description` or `[data-testid="pricing-table"]`
+When you select BFS, DFS, or BestFirst crawling, this config guides link exploration.
 
----
+- `max_pages`: Stop after crawling this many pages
+- `max_depth`: Depth of link‑following
+- `include_external`: Follow off‑domain links?
+- `score_threshold`: Filter out low‑score links (BestFirst)
+- `filter_chain`: Extra link filter rules
+- `url_scorer`: If you want a custom approach to scoring discovered URLs
 
-## ⬆️ Output
+### 5. **markdownConfig** (Optional)
 
-Your results appear in an Apify dataset which you can find in the **Output** or **Storage** tab.
+For HTML→Markdown conversions.
 
-Download as JSON, CSV, Excel, HTML, or view as a table. The `extracted` field contains the structured data returned by the AI scraper based on your prompt.
+- `ignore_links`: Skip anchor links
+- `ignore_images`: Omit markdown images
+- `escape_html`: Turn `<div>` into `&lt;div&gt;`
+- `skip_internal_links`: Remove same‑page anchors
+- `include_sup_sub`: Preserve `<sup>/<sub>` text
+- `citations`: Put footnotes at bottom of file
+- `body_width`: Wrap lines at N chars
+- `fit_markdown`: Use advanced “fit” mode if also using a filter
 
-### JSON
+### 6. **contentFilterConfig** (Optional)
 
-Each run produces one output record per URL containing the original URL, your prompt, and the extracted data nested under the `extracted` key.
+Prune out nav bars, sidebars, or extra text using “pruning,” “bm25,” or a second LLM filter.
 
----
+- `type`: e.g. “pruning”, “bm25”
+- `threshold`: Score cutoff
+- `min_word_threshold`: Minimum words to keep
+- `bm25_threshold`: BM25 filter param
+- `apply_llm_filter`: If `true`, do a second pass with an LLM
+- `semantic_filter`: Keep only text about a certain topic
+- `word_count_threshold`: Another word threshold
+- `sim_threshold`, `max_dist`, `top_k`, `linkage_method`: For advanced clustering
 
-**Example 1 — Pricing page extraction (Netflix)**
+### 7. **userAgentConfig** (Optional)
 
-Input:
+Rotate or fix your user agent.
+
+- `user_agent_mode`: “random” or “fixed”
+- `device_type`: “desktop” or “mobile”
+- `browser_type`: e.g. “chrome”
+- `num_browsers`: If rotating among multiple agents
+
+### 8. **llmConfig** (Optional)
+
+For LLM-based extraction or filtering.
+
+- `provider`: e.g. “openai/gpt-4”, “groq/deepseek-r1-distill-llama-70b”
+- `api_token`: Model’s API key
+- `instruction`: Prompt the LLM about how to parse or summarize
+- `base_url`: For custom endpoints
+- `chunk_token_threshold`: Big pages → chunk them
+- `apply_chunking`: Boolean for chunking
+- `input_format`: “markdown” or “html”
+- `temperature`, `max_tokens`: Standard LLM config
+
+### 9. **session_id** (Optional)
+
+Provide a session ID to reuse browser context across multiple runs (logins, multi-step flows, etc.).
+
+### 10. **extractionStrategy** (Optional)
+
+Pick one:
+
+- `SimpleExtractionStrategy`: Simple HTML→Markdown.
+- `LLMExtractionStrategy`: Let an LLM parse or summarize.
+- `JsonCssExtractionStrategy` / `JsonXPathExtractionStrategy`: Provide a schema to produce structured JSON.
+
+### 11. **crawlStrategy** (Optional)
+
+- `SimpleCrawlStrategy`: Just the given start URLs
+- `BFSDeepCrawlStrategy`: Breadth-first approach
+- `DFSDeepCrawlStrategy`: Depth-first approach
+- `BestFirstCrawlingStrategy`: Score links, pick the best first
+
+### 12. **extractionSchema** (Optional)
+
+If using CSS/XPath extraction.
+
+- `name`: Your extraction scheme name
+- `baseSelector`: Parent selector for repeated elements
+- `fields`: Each with `name`, `selector`, `type`, and optional `attribute`
+
+**Example**:
 
 ```
-{
-  "url": "https://help.netflix.com/en/node/24926/us",
-  "prompt": "Extract netflix pricing details",
-  "useStealth": false
+"extractionSchema": {
+  "name": "Custom Extraction",
+  "baseSelector": "div.article",
+  "fields": [
+    { "name": "title", "selector": "h1", "type": "text" },
+    { "name": "link", "selector": "a", "type": "attribute", "attribute": "href" }
+  ]
 }
 ```
 
-Output:
+---
+
+## Usage Examples
+
+### Minimal
 
 ```
 {
-  "url": "https://help.netflix.com/en/node/24926/us",
-  "prompt": "Extract netflix pricing details",
-  "extracted": {
-    "plans": [
+  "startUrls": [
+    { "url": "https://example.com" }
+  ]
+}
+```
+
+Scrapes a single page in headless mode with standard markdown output.
+
+### JSON CSS Extraction
+
+```
+{
+  "startUrls": [
+    { "url": "https://news.ycombinator.com/" }
+  ],
+  "extractionStrategy": "JsonCssExtractionStrategy",
+  "extractionSchema": {
+    "name": "HackerNews",
+    "baseSelector": "tr.athing",
+    "fields": [
       {
-        "name": "Standard with ads",
-        "price": "$8.99 / month",
-        "features": [
-          "Ad-supported, all games and most movies and TV shows are available",
-          "Watch on 2 supported devices at a time",
-          "Watch in 1080p (Full HD)",
-          "Download on 2 supported devices at a time"
-        ]
+        "name": "title",
+        "selector": ".titleline a",
+        "type": "text"
       },
       {
-        "name": "Standard",
-        "price": "$19.99 / month",
-        "features": [
-          "Unlimited ad-free movies, TV shows, and games",
-          "Watch on 2 supported devices at a time",
-          "Watch in 1080p (Full HD)",
-          "Download on 2 supported devices at a time",
-          "Option to add 1 extra member who doesn't live with you"
-        ],
-        "extra_member": {
-          "price_with_ads": "$7.99 / month",
-          "price_without_ads": "$9.99 / month"
-        }
-      },
-      {
-        "name": "Premium",
-        "price": "$26.99 / month",
-        "features": [
-          "Unlimited ad-free movies, TV shows, and games",
-          "Watch on 4 supported devices at a time",
-          "Watch in 4K (Ultra HD) + HDR",
-          "Download on 6 supported devices at a time",
-          "Option to add up to 2 extra members who don't live with you",
-          "Netflix spatial audio"
-        ],
-        "extra_members": {
-          "price_with_ads": "$7.99 / month",
-          "price_without_ads": "$9.99 / month"
-        }
+        "name": "link",
+        "selector": ".titleline a",
+        "type": "attribute",
+        "attribute": "href"
       }
     ]
   }
 }
 ```
 
----
-
-**Example 2 — Job listing extraction (LinkedIn)**
-
-Input:
-
-```
-{
-  "url": "https://www.linkedin.com/jobs/view/4401132879/",
-  "prompt": "Extract job details of the job in focus, not any other job listings showing on the page.",
-  "useStealth": true
-}
-```
-
-Output:
-
-```
-{
-  "url": "https://www.linkedin.com/jobs/view/4401132879/",
-  "prompt": "Extract job details of the job in focus, not any other job listings showing on the page.",
-  "extracted": {
-    "job_title": "Grafana Expert - Fully Remote | Upto $150/hr Hourly",
-    "company": "Mercor",
-    "location": "New York, NY",
-    "posted_time": "11 hours ago",
-    "hourly_wage": "$150/hr",
-    "employment_type": "Part-time",
-    "industries": "Software Development",
-    "job_function": "Other",
-    "seniority_level": null
-  }
-}
-```
+Generates a JSON array, each object containing “title” and “link.”
 
 ---
 
-## ❓ FAQ
+## Pro Tips
 
-### How does AI Web Scraper work?
+- **Deep crawling**: If you want BFS or DFS, set `crawlStrategy` to “BFSDeepCrawlStrategy” or “DFSDeepCrawlStrategy” and configure `deepCrawlConfig`.
+- **Content filtering**: Combine `contentFilterConfig` with `extractionStrategy` for maximum clarity and minimal noise.
+- **LLM-based**: Choose “LLMExtractionStrategy” plus `llmConfig` for advanced summarization or structured data. Great for building AI pipelines.
 
-AI Web Scraper loads the target webpage using a full browser engine, rendering JavaScript and waiting for dynamic content to appear. It then captures the fully rendered page and sends it to a vision-capable AI model along with your extraction prompt. The AI reads the page the same way a human would and returns the requested data as clean, structured JSON. This approach works on virtually any website — no CSS selectors, no XPath, and no maintenance when sites update their layout.
-
-### What makes AI Web Scraper different from traditional scrapers?
-
-Traditional scrapers rely on brittle CSS selectors or XPath expressions that break whenever a website updates its HTML structure. AI Web Scraper uses a vision AI model to understand the visual and semantic content of a page — exactly like a human analyst would — which means it works even when page layouts change, content is dynamically loaded, or the site has no predictable structure to target.
-
-### Can I control the exact format of the output?
-
-Yes. By providing an optional JSON schema in the Output Schema field, you can define precisely what fields you want, what types they should be, and how the output should be nested. When no schema is provided, the scraper returns free-form JSON based on what the AI determines is most relevant to your prompt. For production pipelines and integrations, using a schema is recommended.
-
-### Does AI Web Scraper handle JavaScript-rendered pages?
-
-Yes. The scraper uses a full browser engine to render pages completely before extraction. It supports JavaScript-heavy sites, single-page applications (SPAs), lazy-loaded content, and pages that require user interactions to reveal data. For pages where content loads asynchronously, use the Wait For Selector input to ensure the target element is present before extraction begins.
-
-### Can I use AI Web Scraper as its own API?
-
-Yes. You can use AI Web Scraper programmatically via the Apify API. You can manage, schedule, and run the Actor, access datasets, monitor performance, and retrieve results. To access the API using Node.js, use the `apify-client` [NPM package](https://apify.com/crawlworks/ai-web-scraper/api/client/nodejs). To access the API using Python, use the `apify-client` [PyPI package](https://apify.com/crawlworks/ai-web-scraper/api/client/python).
-
-For detailed information and code examples, see the [**API tab**](https://apify.com/crawlworks/ai-web-scraper/api) or refer to the [**Apify API documentation**](https://docs.apify.com/api/v2).
-
-### Can I integrate AI Web Scraper with other apps?
-
-Yes. AI Web Scraper can be connected with almost any cloud service or web app thanks to [**integrations**](https://apify.com/integrations) on the Apify platform. You can **integrate your scraped data with Zapier, Slack, Make, Airbyte, GitHub, Google Sheets, Asana, LangChain** and more.
-
-You can also use [**webhooks**](https://docs.apify.com/platform/integrations/webhooks) to carry out an action whenever an event occurs — for example, get a notification whenever AI Web Scraper successfully finishes a run.
-
-### Is it legal to use AI web scraping tools?
-
-Web scraping is legal if you are extracting publicly available data. However, you should **respect boundaries such as personal data** and intellectual property regulations. You should only scrape personal data if you have a legitimate reason to do so, and you should also factor in the Terms of Use of the website you are scraping.
-
-### Will multi-URL support be available?
-
-Yes — support for scraping multiple URLs in a single run is on the roadmap and coming soon. For now, you can use the [Apify API](https://apify.com/crawlworks/ai-web-scraper/api) to run multiple Actor instances in parallel to process batches of URLs simultaneously.
-
----
-
-## 💬 Your feedback
-
-We're always working on improving our Actors' performance. If you have any technical feedback for AI Web Scraper or simply found a bug, please create an issue on the Actor's [Issues tab](https://console.apify.com/actors/crawlworks~ai-web-scraper/issues) in Apify Console.
+Thanks for trying out the **AI Web Scraper**—enjoy harnessing rich, clean data for your Apify-based AI solutions!
